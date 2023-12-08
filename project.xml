@@ -1,0 +1,958 @@
+<Customization level="18" description="Transfer Custodian of Tools" product-version="22.212">
+    <Page path="~/Pages/FS/FS100399.aspx" ControlId="2" pageSource="hVJNj9owED0vv8JyxZWvnnaVoNIAAmlZIUKht8rEA1jr2NQfC9vD/vaOE6LAUtScnOfxm/feTNT8RuZsB+SZqZ3HQ0yTL5TMmHVgwsVYSMQ+2jVi22Nt8pWAYysvQEoG3unRGyi3Fgb8IabOeKBkxaTgzMECfnuwLqZbJi3iieZn3nHa7XS+Pj62mD2cWpmlZKr2YISzMQ29flUFlCyFCy9+KBcOvFBNSbPfiNBCqW75fgCyEsZ5JufM7f+rG183Imz9lGjlUD6ZDmOa4bkbRBbQXLIMJlpyMOHysB+mlCy8YmgnBfOGNP3GQ3Q4Pc1/DpljqfYmg4KIox1TVtqyEsVZsQk2lkVAa8GDSrTYpA1y/oKLF5aHIq2lHSieeOs0F0zZVgHNDWzBgMqgfjU3ImfmPdiLaWk6nOsCVPkQJUzKDcteE53nTHGL/hFt38IIfrKEQbcvour/O7je/eDGd3Or5lKwbPHnJrdaRhVsQGaQb8Bc2b2KlAyk1MewnBPBoVq/Iogl5AeJqxl+ziqe2bv2buFlOb1LoHsjKHXMuIU+nifZP8dVP7kgTvaQvX7Xp88coUtiXV3QLW2NBUge06D7xQeHQu0oaV8wLuHkRly4u4xVQe+KcWqth5Iy8EXtyxSi0C8Vf6AYIBMqJLsWimtMdaQYri2v9nYm1ATEbo+te50OJUhVva5Xp5rqzeI0/gI=" />
+    <Page path="~/Pages/FS/FS304099.aspx" ControlId="14" pageSource="nVXfU+IwEH6Wv6KTG19tUe6HTmGOK6DMiMNQTu/tJrQrZEyTXpKK3sP97ZekrS1CEe1Tut399ttvtxv/+LszxUtwrjFbZvrQRcEn5EywVCDMhxGh2vbPrSzSHXGRDEBhQk8Sa0ZOP1N8+AhM3REBWdpFSmSAnFtMSYwVzOBPBlJ10T2mUtsDHhfIo/DM63jn5ydYpk8nkUTOmK1AECW7yGT7XTogZ06UifjJlDnEljdyjnstXxeR85s/p+DcEqEyTKdYrQ5gruNbvk5+EXCmdAHOeNBFkT63DU1rmlIcwRWnMQjzMV0NQuTMMoZ1QSGIRw3Tax356dPF9NcAKxzyTERggWJdkMg9Ze6p6UmyMIXMrUR3JDY82553jFpO8Zg6bnBinDinss/iIJOKxwQzeWJNE0yYqgKmgiRYPN8SWHdRXrE5Vw6a4JEfYEoXOHoIeJJgFktdura622ZtfFWNVtmtqdTbrdlps2ajRslMUwxZJ3wgzDgji3evzVviVYRKdY1lAskCxEbhG7o6V0CWKw1z6nnpk55WSvnajOwViaEcSqvQHJKU6oE1LwW9a/zMMzXLaN7RuqG9xS9UWKgZXxfd7RU6ViG7gV+hmDyBVBup2gV4wGmWsHJ69iYIgUKkuGiELx3aXq7jiACNu2gsZQY3mdG0ylD67sI3g0NUsNI7BGRJ7a2kX7ZzDtnysIRvFtTZAJ9BBCRVFt6t4WkXmJMEhjFRjZh1p842Z/O5Il13ricSPB3wNWtOUjicbyTQDVeZrKEXXh8eotP3D9G7NWqf7dJ+j0y+W/vrCodyJxy2ds6a185l49q5FCS2CEt9OGDR7Fwo7c92oZSbK79b5L4Ncw2PQGVNYMPDGjdWWYFkd5l1Nkvcz/uWR9fCc/Pu37DWir6UoMaDl1K+elVHKpgG8Nc4A5CReIHq5Dp8BG0G9zeLCqnd8cqfdG+YKVY3vNaYbzZQX2c1kWp8rMa2BW7VA9/0KCR/wQ6QvlON9neExVxfIUOG9UUdl0pOCKu1vSDp9yNFOPuBRX7Fui/v1TCb7FuD/B8=" />
+    <Automation screen="FS100399">
+        <Actions ScreenID="FS100399">
+            <Category IsActive="True" DisplayName="Actions" CategoryName="Action" Placement="0" LineNbr="0" />
+            <Category IsActive="True" DisplayName="Inquiries" CategoryName="Inquiry" Placement="0" LineNbr="1" />
+            <Category IsActive="True" DisplayName="Reports" CategoryName="Report" Placement="0" LineNbr="2" />
+        </Actions>
+    </Automation>
+    <Graph ClassName="TCAttributes" Source="#CDATA" IsNew="True" FileType="NewFile">
+        <CDATA name="Source"><![CDATA[using System;
+using PX.Data;
+using System.Linq;
+
+namespace ToolsAndCustodians
+{
+    public class AutoNumberAttribute : PXEventSubscriberAttribute, IPXFieldVerifyingSubscriber, IPXFieldDefaultingSubscriber, IPXRowPersistingSubscriber, IPXRowPersistedSubscriber
+    {
+        public const string NewValue = "<NEW>";
+
+        private bool _AutoNumbering;
+        private Type _AutoNumberingField;
+        private BqlCommand _LastNumberCommand;
+
+        public virtual string Prefix { get; private set; }
+        public static void SetPrefix<Field>(PXCache sender, object row, string prefix) where Field : IBqlField
+        {
+            foreach (PXEventSubscriberAttribute attribute in sender.GetAttributes<Field>(row))
+            {
+                if (attribute is AutoNumberAttribute)
+                {
+                    ((AutoNumberAttribute)attribute).Prefix = prefix;
+                }
+            }
+        }
+
+        public virtual Type LastNumberField { get; private set; }
+        public static void SetLastNumberField<Field>(PXCache sender, object row, Type lastNumberField) where Field : IBqlField
+        {
+            foreach (PXEventSubscriberAttribute attribute in sender.GetAttributes<Field>(row))
+            {
+                if (attribute is AutoNumberAttribute)
+                {
+                    AutoNumberAttribute attr = (AutoNumberAttribute)attribute;
+                    attr.LastNumberField = lastNumberField;
+                    attr.CreateLastNumberCommand();
+                }
+            }
+        }
+
+        public virtual void FieldDefaulting(PXCache sender, PXFieldDefaultingEventArgs e)
+        {
+            if (_AutoNumbering)
+            {
+                e.NewValue = NewValue;
+            }
+        }
+
+        public virtual void FieldVerifying(PXCache sender, PXFieldVerifyingEventArgs e)
+        {
+            if (_AutoNumbering && PXSelectorAttribute.Select(sender, e.Row, _FieldName, e.NewValue) == null)
+            {
+                e.NewValue = NewValue;
+            }
+        }
+
+        public virtual void RowPersisting(PXCache sender, PXRowPersistingEventArgs e)
+        {
+            if ((e.Operation & PXDBOperation.Command) == PXDBOperation.Insert)
+            {
+                Type setupType = BqlCommand.GetItemType(_AutoNumberingField);
+                string lastNumber = GetNewNumber(sender, setupType);
+                if (lastNumber != null)
+                {
+                    sender.SetValue(e.Row, _FieldOrdinal, lastNumber);
+                }
+            }
+        }
+
+        public virtual void RowPersisted(PXCache sender, PXRowPersistedEventArgs e)
+        {
+            if ((e.Operation & PXDBOperation.Command) == PXDBOperation.Insert &&
+                e.TranStatus == PXTranStatus.Aborted)
+            {
+                sender.SetValue(e.Row, _FieldOrdinal, NewValue);
+                Type setupType = BqlCommand.GetItemType(_AutoNumberingField);
+                sender.Graph.Caches[setupType].Clear();
+            }
+        }
+
+        public override void CacheAttached(PXCache sender)
+        {
+            BqlCommand command = null;
+            Type autoNumberingField = null;
+            if (typeof(IBqlSearch).IsAssignableFrom(_AutoNumberingField))
+            {
+                command = BqlCommand.CreateInstance(_AutoNumberingField);
+                autoNumberingField = ((IBqlSearch)command).GetField();
+            }
+            else
+            {
+                command = BqlCommand.CreateInstance(typeof(Search<>), _AutoNumberingField);
+                autoNumberingField = _AutoNumberingField;
+            }
+            PXView view = new PXView(sender.Graph, true, command);
+            object row = view.SelectSingle();
+            if (row != null)
+            {
+                _AutoNumbering = (bool)view.Cache.GetValue(row, autoNumberingField.Name);
+            }
+        }
+
+        public AutoNumberAttribute(Type autoNumbering)
+        {
+            if (autoNumbering != null &&
+                (typeof(IBqlSearch).IsAssignableFrom(autoNumbering) ||
+                 typeof(IBqlField).IsAssignableFrom(autoNumbering) && autoNumbering.IsNested))
+            {
+                _AutoNumberingField = autoNumbering;
+            }
+            else
+            {
+                throw new PXArgumentException("autoNumbering");
+            }
+        }
+
+        public AutoNumberAttribute(Type autoNumbering, Type lastNumberField)
+            : this(autoNumbering)
+        {
+            LastNumberField = lastNumberField;
+            CreateLastNumberCommand();
+        }
+
+        private void CreateLastNumberCommand()
+        {
+            _LastNumberCommand = null;
+
+            if (LastNumberField != null)
+            {
+                if (typeof(IBqlSearch).IsAssignableFrom(LastNumberField))
+                    _LastNumberCommand = BqlCommand.CreateInstance(LastNumberField);
+                else if (typeof(IBqlField).IsAssignableFrom(LastNumberField) && LastNumberField.IsNested)
+                    _LastNumberCommand = BqlCommand.CreateInstance(typeof(Search<>), LastNumberField);
+            }
+
+            if (_LastNumberCommand == null) throw new PXArgumentException("lastNumberField");
+        }
+
+        protected virtual string GetNewNumber(PXCache sender, Type setupType)
+        {
+            if (_LastNumberCommand == null)
+                CreateLastNumberCommand();
+            PXView view = new PXView(sender.Graph, false, _LastNumberCommand);
+            object row = view.SelectSingle();
+            if (row == null) return null;
+
+            string lastNumber = (string)view.Cache.GetValue(row, LastNumberField.Name);
+            char[] symbols = lastNumber.ToCharArray();
+            for (int i = symbols.Length - 1; i >= 0; i--)
+            {
+                if (!char.IsDigit(symbols[i])) break;
+
+                if (symbols[i] < '9')
+                {
+                    symbols[i]++;
+                    break;
+                }
+                symbols[i] = '0';
+            }
+            lastNumber = new string(symbols);
+
+            view.Cache.SetValue(row, LastNumberField.Name, lastNumber);
+            PXCache setupCache = sender.Graph.Caches[setupType];
+            setupCache.Update(row);
+            setupCache.PersistUpdated(row);
+
+            if (!string.IsNullOrEmpty(Prefix))
+            {
+                lastNumber = Prefix + lastNumber;
+            }
+            return lastNumber;
+        }
+    }
+}]]></CDATA>
+    </Graph>
+    <Graph ClassName="TCSetup" Source="#CDATA" IsNew="True" FileType="NewDac">
+        <CDATA name="Source"><![CDATA[using System;
+using PX.Data;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace ToolsAndCustodians
+{
+    [System.SerializableAttribute()]
+    [PXPrimaryGraph(typeof(ToolsPreference))]
+    [PXCacheName("Tools Custodian Preference")]
+    public class TCSetup : IBqlTable
+	{
+		#region AutoNumbering
+		[PXDBBool()]
+        [PXDefault(true, PersistingCheck = PXPersistingCheck.Nothing)]
+        [PXUIField(DisplayName = "Auto Numbering")]
+		public virtual bool? AutoNumbering { get; set; }
+		public abstract class autoNumbering : IBqlField { }
+		#endregion
+
+		#region IssueNumber
+		[PXDBString(15, IsUnicode = true)]
+        [PXDefault("00000")]
+        [PXUIField(DisplayName = "Last IssueNbr")]
+        public virtual string IssueNumber { get; set; }
+		public abstract class issueNumber : IBqlField { }
+		#endregion
+	}
+}]]></CDATA>
+    </Graph>
+    <Graph ClassName="ToolsDetails" Source="#CDATA" IsNew="True" FileType="NewDac">
+        <CDATA name="Source"><![CDATA[using System;
+using PX.Data;
+using PX.Objects.CM;
+using PX.Objects.EP;
+using PX.Objects.FA;
+using PX.Objects.GL;
+
+namespace ToolsAndCustodians
+{
+    [Serializable]
+    public class ToolsDetails : IBqlTable
+    {
+        #region Autoidx
+        [PXDBIdentity(IsKey = true)]
+        [PXUIField(DisplayName = "Autoidx")]
+        public virtual int? Autoidx { get; set; }
+        public abstract class autoidx : IBqlField { }
+        #endregion
+
+        #region RefNbr
+        [PXDBString(15, IsUnicode = true)]
+        [PXDBDefault(typeof(ToolsIssue.issueNumber))]
+        [PXUIField(DisplayName = "RefNbr", Enabled =false)]
+        //[PXParent(typeof(Select<ToolsDetails, Where<ToolsDetails.refNbr, Equal<Current<ToolsIssue.issueNumber>>>>))]        
+
+        public virtual string RefNbr { get; set; }
+        public abstract class refNbr : IBqlField { }
+        #endregion       
+
+        #region AssetID
+        [PXDBInt()]
+        [PXDBLiteDefault(typeof(FixedAsset.assetID))]        
+        [PXSelector(typeof(Search2<FixedAsset.assetID, LeftJoin<FADetails, On<FADetails.assetID, Equal<FixedAsset.assetID>>,
+                LeftJoin<FALocationHistory, On<FALocationHistory.assetID, Equal<FADetails.assetID>,
+                                            And<FALocationHistory.revisionID, Equal<FADetails.locationRevID>>>,
+                LeftJoin<Branch, On<Branch.branchID, Equal<FALocationHistory.locationID>>,
+                LeftJoin<EPEmployee, On<EPEmployee.bAccountID, Equal<FALocationHistory.employeeID>>>>>>,
+                Where<FixedAsset.recordType, Equal<FARecordType.assetType>, And<FixedAsset.classID, Equal<int_ASSETTYPEPCT>, And<FALocationHistory.employeeID,Equal<Current<ToolsIssue.issueEng>>>>>>),
+                typeof(FixedAsset.assetCD),
+                typeof(FixedAsset.description),
+                typeof(FixedAsset.classID),
+                typeof(FixedAsset.usefulLife),
+                typeof(FixedAsset.assetTypeID),
+                typeof(FADetails.status),
+                typeof(Branch.branchCD),
+                typeof(EPEmployee.acctName),
+                typeof(FALocationHistory.department),
+                Filterable = true,
+                SubstituteKey = typeof(FixedAsset.assetCD),
+                DescriptionField = typeof(FixedAsset.description))]       
+        [PXUIField(DisplayName = "Asset", Visibility = PXUIVisibility.SelectorVisible)]
+        public virtual int? AssetID { get; set; }
+        public abstract class assetID : IBqlField { }
+        protected Int32? _AssetID;
+        #endregion
+
+        #region AssetDescr
+        [PXDBString(50, IsUnicode = true)]
+        [PXUIField(DisplayName = "Asset Descr", Enabled = false)]
+        public virtual string AssetDescr { get; set; }
+        public abstract class assetDescr : IBqlField { }
+        #endregion
+
+        #region Comments
+        [PXDBString(50, IsUnicode = true)]
+        [PXUIField(DisplayName = "Comments")]
+        public virtual string Comments { get; set; }
+        public abstract class comments : IBqlField { }
+        #endregion
+    }
+
+    public class int_ASSETTYPEPCT : Constant<string>
+    {
+        public int_ASSETTYPEPCT()
+            : base("289")
+        {
+        }
+    }
+}]]></CDATA>
+    </Graph>
+    <Graph ClassName="ToolsIssue" Source="#CDATA" IsNew="True" FileType="NewDac">
+        <CDATA name="Source"><![CDATA[using System;
+using PX.Data;
+using PX.Objects.CR;
+using PX.Objects.EP;
+using PX.Objects.FA;
+
+namespace ToolsAndCustodians
+{
+    [Serializable]
+    [PXPrimaryGraph(typeof(ToolsMaint))]
+    public class ToolsIssue : IBqlTable
+    {
+        #region IssueNumber
+        [PXDBString(15, IsUnicode = true, IsKey = true)]
+        [AutoNumber(typeof(TCSetup.autoNumbering), typeof(TCSetup.issueNumber))]
+        [PXUIField(DisplayName = "Issue Number")]
+        [PXSelector(typeof(Search<ToolsIssue.issueNumber>),
+                typeof(ToolsIssue.issueDate),
+                typeof(ToolsIssue.issueEng),
+                typeof(ToolsIssue.receiptEng),
+                typeof(ToolsIssue.status))]
+        public virtual string IssueNumber { get; set; }
+        public abstract class issueNumber : IBqlField { }
+        #endregion
+
+        #region IssueDate
+        [PXDBDate()]
+        [PXDefault(typeof(AccessInfo.businessDate))]
+        [PXUIField(DisplayName = "Issue Date")]
+        public virtual DateTime? IssueDate { get; set; }
+        public abstract class issueDate : IBqlField { }
+        #endregion
+
+         
+            #region IssueEng
+        [PXDBInt]
+        [PXSelector(
+            typeof(Search<EPEmployee.bAccountID,
+                        Where<EPEmployee.departmentID, Equal<Current<EPEmployee.departmentID>>>>),
+            SubstituteKey = typeof(EPEmployee.acctCD),
+            DescriptionField = typeof(EPEmployee.acctName))]
+        [PXUIField(DisplayName = "Issue Engineer")]
+        [PXDefault(typeof(Search<BAccount.bAccountID,
+                      Where<BAccount.defContactID, Equal<Current<AccessInfo.contactID>>>>),
+                   PersistingCheck = PXPersistingCheck.Nothing)]
+        public virtual int? IssueEng
+        {
+            get { return _IssueID; }
+            set { _IssueID = value; }
+        }
+        public abstract class issueEng : IBqlField { }
+        protected int? _IssueID;
+        #endregion
+
+
+        #region ReceiptEng
+        [PXDBInt()]
+        [PXSelector(typeof(Search<EPEmployee.bAccountID, Where<EPEmployee.departmentID, Equal<string_DEPARTMENTPCT>>>), SubstituteKey = typeof(EPEmployee.acctCD), DescriptionField = typeof(EPEmployee.acctName))]
+        [PXUIField(DisplayName = "Receipt Engineer")]
+        public virtual int? ReceiptEng
+        {
+            get
+            {
+                return _EmployeeID;
+            }
+            set
+            {
+                _EmployeeID = value;
+            }
+        }
+        public abstract class receiptEng : IBqlField { }
+        protected int? _EmployeeID;
+        #endregion
+
+        #region ReceiptGuid
+        [PXDBGuid()]        
+        [PXFormula(typeof(Selector<ToolsIssue.receiptEng, EPEmployee.userID>))]       
+        public virtual Guid? ReceiptGuid
+        {
+            get
+            {
+                return this._Custodian;
+            }
+            set
+            {
+                _Custodian=value;
+            }
+        }
+        public abstract class receiptGuid : IBqlField { }
+        protected Guid? _Custodian;
+        #endregion
+
+        #region Status
+        [PXDBString(1, IsFixed = true)]
+        [PXUIField(DisplayName = "Status", Visibility = PXUIVisibility.SelectorVisible, Enabled = false)]
+        [PXStringList(
+            new string[]
+            {
+                ToolsIssueStatus.OnHold,
+                ToolsIssueStatus.Issue,
+                ToolsIssueStatus.Receive,
+                ToolsIssueStatus.Completed
+            },
+            new string[]
+            {
+                "On-Hold",
+                "Tool Issued",
+                "Tool Received",
+                "Transfer Completed"
+            })]
+        [PXDefault("H")]
+        public virtual String Status
+        {
+            get
+            {
+                return this._Status;
+            }
+            set
+            {
+                this._Status = value;
+            }
+        }
+        public abstract class status : IBqlField { }
+        protected string _Status;
+        #endregion
+
+        #region ReceiptDate
+        [PXDBDate()]
+        [PXDefault(typeof(AccessInfo.businessDate))]
+        [PXUIField(DisplayName = "Receipt Date")]
+        public virtual DateTime? ReceiptDate { get; set; }
+        public abstract class receiptDate : IBqlField { }
+        #endregion
+
+        #region IssuedFlag
+        [PXDBBool()]        
+        [PXUIField(DisplayName = "Issued Flag")]
+        [PXDefault(false)]
+        public virtual bool? IssuedFlag { get; set; }
+        public abstract class issuedFlag : IBqlField { }
+        #endregion
+
+        #region ReceivedFlag
+        [PXDBBool()]
+        [PXUIField(DisplayName = "Received Flag")]
+        [PXDefault(false)]
+        public virtual bool? ReceivedFlag { get; set; }
+        public abstract class receivedFlag : IBqlField { }
+        #endregion
+
+        #region CreatedByID
+        public abstract class createdByID : PX.Data.IBqlField
+        {
+        }
+        protected Guid? _CreatedByID;
+        [PXDBCreatedByID()]
+        public virtual Guid? CreatedByID
+        {
+            get
+            {
+                return this._CreatedByID;
+            }
+            set
+            {
+                this._CreatedByID = value;
+            }
+        }
+        #endregion
+
+        #region CreatedByScreenID
+        public abstract class createdByScreenID : PX.Data.IBqlField
+        {
+        }
+        protected string _CreatedByScreenID;
+        [PXDBCreatedByScreenID()]
+        public virtual string CreatedByScreenID
+        {
+            get
+            {
+                return this._CreatedByScreenID;
+            }
+            set
+            {
+                this._CreatedByScreenID = value;
+            }
+        }
+        #endregion
+
+        #region CreatedDateTime
+        public abstract class createdDateTime : PX.Data.IBqlField
+        {
+        }
+        protected DateTime? _CreatedDateTime;
+        [PXDBCreatedDateTime()]
+        public virtual DateTime? CreatedDateTime
+        {
+            get
+            {
+                return this._CreatedDateTime;
+            }
+            set
+            {
+                this._CreatedDateTime = value;
+            }
+        }
+        #endregion
+
+        #region LastModifiedByID
+        public abstract class lastModifiedByID : PX.Data.IBqlField
+        {
+        }
+        protected Guid? _LastModifiedByID;
+        [PXDBLastModifiedByID()]
+        public virtual Guid? LastModifiedByID
+        {
+            get
+            {
+                return this._LastModifiedByID;
+            }
+            set
+            {
+                this._LastModifiedByID = value;
+            }
+        }
+        #endregion
+               
+        #region LastModifiedByScreenID
+        public abstract class lastModifiedByScreenID : PX.Data.IBqlField
+        {
+        }
+        protected string _LastModifiedByScreenID;
+        [PXDBLastModifiedByScreenID()]
+        public virtual string LastModifiedByScreenID
+        {
+            get
+            {
+                return this._LastModifiedByScreenID;
+            }
+            set
+            {
+                this._LastModifiedByScreenID = value;
+            }
+        }
+        #endregion
+
+        #region LastModifiedDateTime
+        public abstract class lastModifiedDateTime : PX.Data.IBqlField
+        {
+        }
+        protected DateTime? _LastModifiedDateTime;
+        [PXDBLastModifiedDateTime()]
+        public virtual DateTime? LastModifiedDateTime
+        {
+            get
+            {
+                return this._LastModifiedDateTime;
+            }
+            set
+            {
+                this._LastModifiedDateTime = value;
+            }
+        }
+        #endregion
+
+        #region TStamp
+        public abstract class tStamp : PX.Data.IBqlField
+        {
+        }
+        protected byte[] _TStamp;
+        [PXDBTimestamp()]
+        public virtual byte[] TStamp
+        {
+            get
+            {
+                return this._TStamp;
+            }
+            set
+            {
+                this._TStamp = value;
+            }
+        }
+        #endregion
+    }
+
+    public static class ToolsIssueStatus
+    {
+        public const string OnHold = "H";
+        public const string Issue = "I";
+        public const string Receive = "R";
+        public const string Completed = "C";
+    }
+
+    public class string_DEPARTMENTPCT : Constant<string>
+    {
+        public string_DEPARTMENTPCT()
+            : base("TECH ENG")
+        {
+        }
+    }
+}]]></CDATA>
+    </Graph>
+    <Graph ClassName="ToolsMaint" Source="#CDATA" IsNew="True" FileType="NewGraph">
+        <CDATA name="Source"><![CDATA[using System;
+using PX.Data;
+using System.Collections;
+using PX.Objects.FA;
+
+namespace ToolsAndCustodians
+{
+    public class ToolsMaint : PXGraph<ToolsMaint, ToolsIssue>
+    {
+        public PXSelect<ToolsIssue> MasterView;
+        public PXSelect<ToolsDetails, Where<ToolsDetails.refNbr, Equal<Current<ToolsIssue.issueNumber>>>> DetailsView;
+
+        public PXSetup<TCSetup> AutoNumSetup;
+
+        public ToolsMaint()
+        {
+            TCSetup setup = AutoNumSetup.Current;
+        }
+
+        public PXAction<ToolsIssue> IssueTool;
+        [PXButton(CommitChanges = true)]
+        [PXUIField(DisplayName = "Issue")]
+        protected void issueTool()
+        {
+            ToolsIssue transfer = this.MasterView.Current;
+            if (transfer == null) return;
+            PXLongOperation.StartOperation(this, delegate ()
+            {
+                //foreach (PXResult<ToolsIssue> res in PXSelect<ToolsIssue, Where<ToolsIssue.issueNumber, Equal<Current<ToolsIssue.issueNumber>>>>.Select(this))
+                foreach (ToolsIssue issues in SelectIssues(transfer.IssueNumber))
+                {
+                    if (issues == null) return;
+                    if (SelectDetails(transfer.IssueNumber) == null) return;
+                    
+                    using (PXTransactionScope ts = new PXTransactionScope())
+                    {
+                        PXDatabase.Update<ToolsIssue>(new PXDataFieldAssign<ToolsIssue.status>("I"),
+                            new PXDataFieldAssign<ToolsIssue.issuedFlag>(true));
+                        ts.Complete();
+                    }
+                }
+            });
+            this.Save.Press();
+        }
+
+        public PXAction<ToolsIssue> ReceiveTool;
+        [PXButton(CommitChanges = true)]
+        [PXUIField(DisplayName = "Receive")]
+        protected void receiveTool()
+        {
+            ToolsIssue transfer = this.MasterView.Current;
+            if (transfer == null) return;
+            PXLongOperation.StartOperation(this, delegate ()
+            {
+                foreach (ToolsIssue issues in SelectIssues(transfer.IssueNumber))
+                {
+                    if (issues == null) return;
+                    foreach (ToolsDetails details in SelectDetails(transfer.IssueNumber))
+                    {
+                        if (details == null) return;
+                        using (PXTransactionScope ts = new PXTransactionScope())
+                        {
+                            //update status + flag
+                            PXDatabase.Update<ToolsIssue>(new PXDataFieldAssign<ToolsIssue.status>("C"),
+                                new PXDataFieldAssign<ToolsIssue.receivedFlag>(true));
+                            //update custodian
+                            PXDatabase.Update<FALocationHistory>(new PXDataFieldAssign<FALocationHistory.custodian>(issues.ReceiptGuid),
+                                 new PXDataFieldAssign<FALocationHistory.employeeID>(issues.ReceiptEng),
+                                new PXDataFieldRestrict<FALocationHistory.assetID>(details.AssetID));
+                            ts.Complete();
+                        }
+                    }
+                }
+            });
+            this.Save.Press();
+        }
+        private IEnumerable SelectIssues(object issueNumber)
+        {
+            if (issueNumber == null) return new ToolsIssue[0];
+            return PXSelect<ToolsIssue, Where<ToolsIssue.issueNumber, Equal<Current<ToolsIssue.issueNumber>>>>.Select(this).RowCast<ToolsIssue>();
+        }
+
+        private IEnumerable SelectDetails(object refnbr)
+        {
+           if (refnbr == null) return new ToolsDetails[0];
+            return PXSelect<ToolsDetails, Where<ToolsDetails.refNbr, Equal<Required<ToolsDetails.refNbr>>>>.Select(this, refnbr).RowCast<ToolsDetails>();
+     }
+
+        protected virtual void ToolsDetails_AssetID_FieldUpdated(PXCache sender, PXFieldUpdatedEventArgs e)
+        {
+            ToolsDetails line = (ToolsDetails)e.Row;
+            if (line == null) return;
+            if (line.AssetID != null)
+            {
+                FixedAsset assets = PXSelect<FixedAsset, Where<FixedAsset.assetID, Equal<Required<FixedAsset.assetID>>>>.Select(this, line.AssetID);
+                if (assets != null)
+                {
+                    SetDefaultsAfterAssetIDChanges(sender, e, assets.Description);
+                }
+            }
+        }
+
+        public void SetDefaultsAfterAssetIDChanges(PXCache sender, PXFieldUpdatedEventArgs e, string assetDescr)
+        {
+            sender.SetValue<ToolsDetails.assetDescr>(e.Row, assetDescr);
+        }
+
+        // Freeze page
+        protected virtual void ToolsIssue_RowSelected(PXCache sender, PXRowSelectedEventArgs e)
+        {
+
+          
+       
+          
+            ToolsIssue row = (ToolsIssue)e.Row;
+
+
+
+            if (row.Status == "C")
+            {
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueDate>(sender, row, false);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueEng>(sender, row, false);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.receiptEng>(sender, row, false);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.receiptDate>(sender, row, false);
+                MasterView.AllowInsert = false;
+                MasterView.AllowDelete = false;
+                MasterView.AllowUpdate = false;
+                DetailsView.AllowInsert = false;
+                DetailsView.AllowDelete = false;
+                DetailsView.AllowUpdate = false;
+
+                ReceiveTool.SetEnabled(false);
+                IssueTool.SetEnabled(false);
+                Cancel.SetEnabled(false);
+            }
+             else if(row!=null && row.IssueEng!=null){
+              
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueDate>(sender, row, false);
+               PXUIFieldAttribute.SetEnabled<ToolsIssue.receiptDate>(sender, row, false);
+              
+              
+              }
+
+
+else if(row.Status=="R"){
+
+               PXDefaultAttribute.SetPersistingCheck<ToolsIssue.receiptDate>(sender, row, PXPersistingCheck.Nothing);
+
+            }
+            else if(row.Status=="I")
+            {
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueDate>(sender, row, false);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueEng>(sender, row, false);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.receiptEng>(sender, row, false);
+                MasterView.AllowInsert = false;
+                MasterView.AllowDelete = false;                
+                DetailsView.AllowInsert = false;
+                DetailsView.AllowDelete = false;
+                 PXDefaultAttribute.SetPersistingCheck<ToolsIssue.issueDate>(sender, row, PXPersistingCheck.Nothing);
+                
+                IssueTool.SetEnabled(false);
+            }
+            else if (row.Status == "H" || row.Status == null)
+            {
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueDate>(sender, row, true);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.issueEng>(sender, row, true);
+                PXUIFieldAttribute.SetEnabled<ToolsIssue.receiptEng>(sender, row, true);
+                MasterView.AllowInsert = true;
+                MasterView.AllowDelete = true;
+                DetailsView.AllowInsert = true;
+                DetailsView.AllowDelete = true;
+
+                IssueTool.SetEnabled(true);
+                ReceiveTool.SetEnabled(false);
+            }
+        }
+
+        protected virtual void ToolsIssue_RowDeleting(PXCache sender, PXRowDeletingEventArgs e)
+        {
+            ToolsIssue row = (ToolsIssue)e.Row;
+            if (row != null)
+            {
+                if(row.Status == "C")
+                {
+                    string message = "Transfer of custody is complete." + Environment.NewLine + "You can not DELETE this transfer.";
+                    throw new PXException(message);
+                }
+            }
+        }
+
+        public bool UserAuthentication(Guid? user)
+        {
+
+            return true;
+        }
+
+    }
+}]]></CDATA>
+    </Graph>
+    <Graph ClassName="ToolsPreference" Source="#CDATA" IsNew="True" FileType="NewGraph">
+        <CDATA name="Source"><![CDATA[using System;
+using PX.Data;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace ToolsAndCustodians
+{
+	public class ToolsPreference : PXGraph<ToolsPreference>
+	{
+        public PXSave<TCSetup> Save;
+        public PXCancel<TCSetup> Cancel;
+        public PXSelect<TCSetup> MasterView;
+    }
+}]]></CDATA>
+    </Graph>
+    <File AppRelativePath="Pages\FS\FS100399.aspx" />
+    <File AppRelativePath="Pages\FS\FS100399.aspx.cs" />
+    <File AppRelativePath="Pages\FS\FS304099.aspx" />
+    <File AppRelativePath="Pages\FS\FS304099.aspx.cs" />
+    <SiteMapNode>
+        <data-set>
+            <relations format-version="3" relations-version="20160101" main-table="SiteMap">
+                <link from="MUIScreen (NodeID)" to="SiteMap (NodeID)" />
+                <link from="MUIWorkspace (WorkspaceID)" to="MUIScreen (WorkspaceID)" type="FromMaster" linkname="workspaceToScreen" split-location="yes" updateable="True" />
+                <link from="MUISubcategory (SubcategoryID)" to="MUIScreen (SubcategoryID)" type="FromMaster" updateable="True" />
+                <link from="MUITile (ScreenID)" to="SiteMap (ScreenID)" />
+                <link from="MUIWorkspace (WorkspaceID)" to="MUITile (WorkspaceID)" type="FromMaster" linkname="workspaceToTile" split-location="yes" updateable="True" />
+                <link from="MUIArea (AreaID)" to="MUIWorkspace (AreaID)" type="FromMaster" updateable="True" />
+                <link from="MUIPinnedScreen (NodeID, WorkspaceID)" to="MUIScreen (NodeID, WorkspaceID)" type="WeakIfEmpty" isEmpty="Username" />
+                <link from="MUIFavoriteWorkspace (WorkspaceID)" to="MUIWorkspace (WorkspaceID)" type="WeakIfEmpty" isEmpty="Username" />
+            </relations>
+            <layout>
+                <table name="SiteMap">
+                    <table name="MUIScreen" uplink="(NodeID) = (NodeID)">
+                        <table name="MUIPinnedScreen" uplink="(NodeID, WorkspaceID) = (NodeID, WorkspaceID)" />
+                    </table>
+                    <table name="MUITile" uplink="(ScreenID) = (ScreenID)" />
+                </table>
+                <table name="MUIWorkspace">
+                    <table name="MUIFavoriteWorkspace" uplink="(WorkspaceID) = (WorkspaceID)" />
+                </table>
+                <table name="MUISubcategory" />
+                <table name="MUIArea" />
+            </layout>
+            <data>
+                <SiteMap>
+                    <row Position="2" Title="Tools Preference" Url="~/Pages/FS/FS100399.aspx" Expanded="0" IsFolder="0" ScreenID="FS100399" NodeID="b50f00f2-51f4-4b87-9177-46d4d1a8fe17" ParentID="f37e8e0f-7762-49b3-b996-c908643fd6a2" />
+                </SiteMap>
+            </data>
+        </data-set>
+    </SiteMapNode>
+    <SiteMapNode>
+        <data-set>
+            <relations format-version="3" relations-version="20160101" main-table="SiteMap">
+                <link from="MUIScreen (NodeID)" to="SiteMap (NodeID)" />
+                <link from="MUIWorkspace (WorkspaceID)" to="MUIScreen (WorkspaceID)" type="FromMaster" linkname="workspaceToScreen" split-location="yes" updateable="True" />
+                <link from="MUISubcategory (SubcategoryID)" to="MUIScreen (SubcategoryID)" type="FromMaster" updateable="True" />
+                <link from="MUITile (ScreenID)" to="SiteMap (ScreenID)" />
+                <link from="MUIWorkspace (WorkspaceID)" to="MUITile (WorkspaceID)" type="FromMaster" linkname="workspaceToTile" split-location="yes" updateable="True" />
+                <link from="MUIArea (AreaID)" to="MUIWorkspace (AreaID)" type="FromMaster" updateable="True" />
+                <link from="MUIPinnedScreen (NodeID, WorkspaceID)" to="MUIScreen (NodeID, WorkspaceID)" type="WeakIfEmpty" isEmpty="Username" />
+                <link from="MUIFavoriteWorkspace (WorkspaceID)" to="MUIWorkspace (WorkspaceID)" type="WeakIfEmpty" isEmpty="Username" />
+            </relations>
+            <layout>
+                <table name="SiteMap">
+                    <table name="MUIScreen" uplink="(NodeID) = (NodeID)">
+                        <table name="MUIPinnedScreen" uplink="(NodeID, WorkspaceID) = (NodeID, WorkspaceID)" />
+                    </table>
+                    <table name="MUITile" uplink="(ScreenID) = (ScreenID)" />
+                </table>
+                <table name="MUIWorkspace">
+                    <table name="MUIFavoriteWorkspace" uplink="(WorkspaceID) = (WorkspaceID)" />
+                </table>
+                <table name="MUISubcategory" />
+                <table name="MUIArea" />
+            </layout>
+            <data>
+                <SiteMap>
+                    <row Position="3" Title="Transfer Tool Custodian" Url="~/Pages/FS/FS304099.aspx" Expanded="0" IsFolder="0" ScreenID="FS304099" NodeID="fed349f6-e755-485f-bb3b-09e992c8cc56" ParentID="cbd46e9a-bb2b-49f5-a8e3-55728f51ee19" />
+                </SiteMap>
+            </data>
+        </data-set>
+    </SiteMapNode>
+    <Sql TableName="Details" SqlScriptPriority="1" CustomScript="#CDATA">
+        <CDATA name="CustomScript"><![CDATA[SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF OBJECT_ID('dbo.ToolsDetails', 'U') IS  NULL 
+Begin
+CREATE TABLE [dbo].[ToolsDetails](
+	[Autoidx] [int] IDENTITY(1,1) NOT NULL,
+	[RefNbr] [nvarchar](15) NULL,
+	[AssetID] [int] NULL,
+	[AssetDescr] [nvarchar](50) NULL,
+	[Comments] [nvarchar](50) NULL,
+ CONSTRAINT [PK_ToolsDetails] PRIMARY KEY CLUSTERED 
+(
+	[Autoidx] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+End]]></CDATA>
+    </Sql>
+    <Sql TableName="setup" SqlScriptPriority="2" CustomScript="#CDATA">
+        <CDATA name="CustomScript"><![CDATA[SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF OBJECT_ID('dbo.TCSetup', 'U') IS  NULL 
+Begin
+CREATE TABLE [dbo].[TCSetup](
+	[CompanyID] [int] NOT NULL,
+	[AutoNumbering] [bit] NOT NULL,
+	[IssueNumber] [nvarchar](15) NOT NULL,
+ CONSTRAINT [TCSetup_PK] PRIMARY KEY CLUSTERED 
+(
+	[CompanyID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+End]]></CDATA>
+    </Sql>
+    <Sql TableName="ToolsIssues" CustomScript="#CDATA">
+        <CDATA name="CustomScript"><![CDATA[SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF OBJECT_ID('dbo.ToolsIssue', 'U') IS  NULL 
+Begin
+CREATE TABLE [dbo].[ToolsIssue](
+	[Autoidx] [int] IDENTITY(1,1) NOT NULL,
+	[IssueNumber] [nvarchar](15) NULL,
+	[IssueDate] [datetime2](7) NULL,
+	[IssueEng] [int] NULL,
+	[ReceiptEng] [int] NULL,
+	[Status] [char](1) NULL,
+	[ReceiptDate] [datetime2](7) NULL,
+	[IssuedFlag] [bit] NULL,
+	[ReceivedFlag] [bit] NULL,
+	[ReceiptGuid] [uniqueidentifier] NULL,
+	[CreatedByID] [uniqueidentifier] NULL,
+	[CreatedByScreenID] [char](8) NULL,
+	[CreatedDateTime] [datetime] NULL,
+	[LastModifiedByID] [uniqueidentifier] NULL,
+	[LastModifiedByScreenID] [char](8) NULL,
+	[LastModifiedDateTime] [datetime] NULL,
+	[tstamp] [timestamp] NULL,
+ CONSTRAINT [PK_ToolsIssue] PRIMARY KEY CLUSTERED 
+(
+	[Autoidx] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+End]]></CDATA>
+    </Sql>
+    <DAC type="ToolsAndCustodians.ToolsDetails">
+        <Field FieldName="RefNbr" TypeName="string" OverrideClassName="ToolsAndCustodians.ToolsDetails" StorageName="ExistingColumn" />
+    </DAC>
+</Customization>
